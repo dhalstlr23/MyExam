@@ -1,0 +1,155 @@
+
+# 1. 모듈 가져오기 (import)
+import pygame
+import random
+import sys
+
+# 2. 게임을 시작할 준비를 해요.
+pygame.init()
+
+# 화면 크기를 정하는 변수
+screen_width = 800
+screen_height = 600
+screen = pygame.display.set_mode((screen_width, screen_height))
+pygame.display.set_caption("숫자 야구 게임")
+
+# 색깔을 변수에 저장해두면 나중에 쓰기 편해요.
+BLACK = (0, 0, 0)
+WHITE = (255, 255, 255)
+GREEN = (0, 255, 0)
+RED = (255, 0, 0)
+BLUE = (0, 0, 255)
+
+# 3. 폰트 설정
+# 우리가 직접 지정한 폰트 파일 경로를 변수에 넣었어요.
+font_path = "C:/Code/Python/숫자야구/gulim.ttc"
+try:
+    title_font = pygame.font.Font(font_path, 60)
+    normal_font = pygame.font.Font(font_path, 40)
+    small_font = pygame.font.Font(font_path, 30)
+except FileNotFoundError:
+    print("폰트 파일을 찾을 수 없어 기본 폰트로 대체합니다.")
+    title_font = pygame.font.Font(None, 60)
+    normal_font = pygame.font.Font(None, 40)
+    small_font = pygame.font.Font(None, 30)
+
+# 4. 게임 상태를 나타내는 변수
+# 이 변수로 게임의 현재 상태를 관리해요.
+game_state = "menu"
+
+# 5. 게임에 필요한 다른 변수들
+computer_number_list = []
+my_guess = ""
+game_log_list = []
+is_game_active = True
+
+
+# 6. 함수 정의
+def draw_text_on_screen(text, position, font_to_use, color=WHITE):
+    """
+    텍스트를 화면에 그리는 함수
+    """
+    text_surface = font_to_use.render(text, True, color)
+    text_rect = text_surface.get_rect(center=position)
+    screen.blit(text_surface, text_rect)
+    return text_rect
+
+
+# 7. 메인 게임 루프 (while 반복문)
+# 이 반복문이 게임이 끝날 때까지 계속 실행돼요.
+running = True
+while running:
+    # 7-1. 이벤트 처리
+    # for 반복문을 사용해 발생한 모든 이벤트를 확인해요.
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            running = False
+
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            mouse_pos = event.pos
+            # if 조건문으로 게임 상태를 확인하고 버튼 클릭을 처리해요.
+            if game_state == "menu":
+                if cpu_button.collidepoint(mouse_pos):
+                    game_state = "cpu_mode"
+                    # 새 게임을 시작하기 위해 변수 초기화
+                    computer_number_list = []
+                    # while 반복문으로 겹치지 않는 3자리 숫자 생성
+                    while len(computer_number_list) < 3:
+                        new_num = random.randint(0, 9)
+                        if new_num not in computer_number_list:
+                            computer_number_list.append(new_num)
+                    print(f"새 게임 비밀 숫자: {computer_number_list}")
+                    my_guess = ""
+                    game_log_list = []
+                    is_game_active = True
+
+                elif user_button.collidepoint(mouse_pos):
+                    game_state = "user_vs_mode"
+
+            elif game_state == "cpu_mode":
+                if menu_button.collidepoint(mouse_pos):
+                    game_state = "menu"
+
+        # 키보드 입력 이벤트
+        if event.type == pygame.KEYDOWN:
+            if game_state == "cpu_mode" and is_game_active:
+                if event.key == pygame.K_RETURN:
+                    if len(my_guess) == 3 and my_guess.isdigit():
+                        strikes_count = 0
+                        balls_count = 0
+
+                        my_guess_list = [int(digit) for digit in my_guess]
+
+                        # for 반복문으로 스트라이크와 볼을 세는 로직
+                        for i in range(3):
+                            if my_guess_list[i] == computer_number_list[i]:
+                                strikes_count += 1
+                            elif my_guess_list[i] in computer_number_list:
+                                balls_count += 1
+
+                        log_line = f"{my_guess} -> {strikes_count}S {balls_count}B"
+                        game_log_list.append(log_line)
+
+                        if strikes_count == 3:
+                            is_game_active = False
+
+                        my_guess = ""
+                elif event.key == pygame.K_BACKSPACE:
+                    my_guess = my_guess[:-1]
+                elif event.unicode.isdigit() and len(my_guess) < 3:
+                    my_guess += event.unicode
+
+    # 7-2. 화면 그리기
+    screen.fill(BLACK)
+
+    if game_state == "menu":
+        draw_text_on_screen("숫자 야구 게임", (screen_width // 2, 100), title_font)
+        cpu_button = draw_text_on_screen("CPU vs", (screen_width // 2, screen_height // 2), normal_font, BLUE)
+        user_button = draw_text_on_screen("USER vs", (screen_width // 2, screen_height // 2 + 100), normal_font, BLUE)
+
+    elif game_state == "cpu_mode":
+        draw_text_on_screen("숫자 야구 게임 (CPU vs)", (screen_width // 2, 50), title_font)
+        draw_text_on_screen("숫자를 입력하세요 (3자리)", (screen_width // 2, screen_height // 2 - 100), small_font)
+        draw_text_on_screen(f"입력: {my_guess}", (screen_width // 2, screen_height // 2 - 50), normal_font)
+
+        log_y_position = screen_height // 2
+        for entry in game_log_list:
+            draw_text_on_screen(entry, (screen_width // 2, log_y_position), small_font)
+            log_y_position += 30
+
+        if not is_game_active:
+            draw_text_on_screen("삼진아웃!!!!!", (screen_width // 2, screen_height // 2 + 100), normal_font, GREEN)
+
+        menu_button = draw_text_on_screen("메뉴로 돌아가기", (screen_width // 2, screen_height - 50), small_font, RED)
+
+    elif game_state == "user_vs_mode":
+        draw_text_on_screen("USER vs 모드 (준비 중...)", (screen_width // 2, screen_height // 2), title_font)
+        draw_text_on_screen("이 모드는 네트워크 연결이 필요합니다.", (screen_width // 2, screen_height // 2 + 100), normal_font)
+        menu_button = draw_text_on_screen("메뉴로 돌아가기", (screen_width // 2, screen_height - 50), small_font, RED)
+
+    # 7-3. 화면 업데이트
+    pygame.display.flip()
+
+# 8. 게임 종료
+pygame.quit()
+sys.exit()
