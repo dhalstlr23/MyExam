@@ -4,16 +4,16 @@ import pygame
 import random
 import sys
 
-# 2. 게임을 시작할 준비를 해요.
+# 2. 게임을 시작 준비
 pygame.init()
 
-# 화면 크기를 정하는 변수
+# 화면 크기 설정
 screen_width = 800
 screen_height = 600
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption("숫자 야구 게임")
 
-# 색깔을 변수에 저장해두면 나중에 쓰기 편해요.
+# 색깔지정
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
 GREEN = (0, 255, 0)
@@ -21,7 +21,6 @@ RED = (255, 0, 0)
 BLUE = (0, 0, 255)
 
 # 3. 폰트 설정
-# 우리가 직접 지정한 폰트 파일 경로를 변수에 넣었어요.
 font_path = "C:/Code/Python/숫자야구/gulim.ttc"
 try:
     title_font = pygame.font.Font(font_path, 60)
@@ -34,10 +33,9 @@ except FileNotFoundError:
     small_font = pygame.font.Font(None, 30)
 
 # 4. 게임 상태를 나타내는 변수
-# 이 변수로 게임의 현재 상태를 관리해요.
 game_state = "menu"
 
-# 5. 게임에 필요한 다른 변수들
+# 5. 게임에 필요한 변수들
 computer_number_list = []
 my_guess = ""
 game_log_list = []
@@ -56,18 +54,18 @@ def draw_text_on_screen(text, position, font_to_use, color=WHITE):
 
 
 # 7. 메인 게임 루프 (while 반복문)
-# 이 반복문이 게임이 끝날 때까지 계속 실행돼요.
+# 이 반복문이 게임이 끝날 때까지 계속 실행
 running = True
 while running:
     # 7-1. 이벤트 처리
-    # for 반복문을 사용해 발생한 모든 이벤트를 확인해요.
+    # for 반복문을 사용해 발생한 모든 이벤트를 확인
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
         if event.type == pygame.MOUSEBUTTONDOWN:
             mouse_pos = event.pos
-            # if 조건문으로 게임 상태를 확인하고 버튼 클릭을 처리해요.
+            # if 조건문으로 게임 상태를 확인하고 버튼 클릭
             if game_state == "menu":
                 if cpu_button.collidepoint(mouse_pos):
                     game_state = "cpu_mode"
@@ -100,7 +98,7 @@ while running:
 
                         my_guess_list = [int(digit) for digit in my_guess]
 
-                        # for 반복문으로 스트라이크와 볼을 세는 로직
+                        # for 반복문으로 스트라이크와 볼을 카운트 표시
                         for i in range(3):
                             if my_guess_list[i] == computer_number_list[i]:
                                 strikes_count += 1
